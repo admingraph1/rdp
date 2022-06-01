@@ -27,7 +27,7 @@ jobs:
         Invoke-WebRequest https://raw.githubusercontent.com/frameme02/rdp-1/master/Files/NGROK-CHECK.bat -OutFile NGROK-CHECK.bat
         Invoke-WebRequest https://raw.githubusercontent.com/frameme02/rdp-1/master/Files/loop.bat -OutFile loop.bat
     - name: Make YML file for NGROK.
-      run: start NGROK-AP.bat
+      run: cmd /c NGROK-AP.bat
     - name: Enable RDP Access.
       run: | 
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
