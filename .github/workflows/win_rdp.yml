@@ -1,0 +1,40 @@
+name: RDP_COFFIN2
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    timeout-minutes: 9999
+
+    steps:
+    - run: |
+        Set-Content authtoken.txt "29zY9I6cxLXWDJBBsng0CIWqLCR_3gRtGYLfnoCAwuVP3t1Qf" #enter your ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken (if you don't have account, make one)
+        Set-Content region.txt "AP" #enter region for the Ngrok servers (available: EU, US, JP, AP, SA) write one of them with capital letters
+    - run: |
+        Invoke-WebRequest https://raw.githubusercontent.com/frameme02/rdp-1/master/Files/ngrok.exe -OutFile ngrok.exe
+        Invoke-WebRequest https://raw.githubusercontent.com/frameme02/rdp-1/master/Files/nssm.exe -OutFile nssm.exe
+    - run: | 
+        copy nssm.exe C:\Windows\System32
+        copy ngrok.exe C:\Windows\System32
+        copy authtoken.txt C:\Windows\System32
+        copy region.txt C:\Windows\System32
+    - run: |
+        $authtoken = Get-Content authtoken.txt
+        .\ngrok.exe authtoken $authtoken
+    - run: |
+        $region = Get-Content region.txt
+        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/NGROK-$region.bat -Outfile NGROK-$region.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/NGROK-CHECK.bat -Outfile NGROK-CHECK.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/loop.bat -Outfile loop.bat
+    - run: |
+        $region = Get-Content region.txt
+        cmd /c NGROK-$region.bat
+    - run: |
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+    - run: cmd /c sc start ngrok
+    - run: cmd /c NGROK-CHECK.bat
+    - run: cmd /c loop.bat
